@@ -1,0 +1,28 @@
+{
+  "name": "abdyfranco/banguat",
+  "description": "Provides an easy-to-use class for communicating with the exchange rate web service of Banco de Guatemala.",
+  "license": "MIT",
+  "keywords": [
+    "money",
+    "exchange",
+    "banguat"
+  ],
+  "authors": [
+    {
+      "name": "Abdy Franco",
+      "email": "iam@abdyfran.co",
+      "homepage": "http://abdyfran.co"
+    }
+  ],
+  "require": {
+    "php": ">=5.6",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Banguat\\": "src/"
+    }
+  },
+  "prefer-stable": true,
+  "minimum-stability": "dev"
+}
