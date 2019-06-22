@@ -1,6 +1,7 @@
 <?php
 /**
- * Provides an easy-to-use class for communicating with the exchange rate web service of Banco de Guatemala.
+ * Provides an easy-to-use class for communicating with the exchange rate
+ * web service of Banco de Guatemala.
  *
  * @package Banguat
  * @subpackage Banguat.ExchangeRate
@@ -19,12 +20,12 @@ class ExchangeRate
     private $endpoint = 'http://www.banguat.gob.gt/variables/ws/TipoCambio.asmx?wsdl';
 
     private $codes = [
-        1  => 'GTQ',
-        2  => 'USD',
-        3  => 'JPY',
-        4  => 'CHF',
-        7  => 'CAD',
-        9  => 'GBP',
+        1 => 'GTQ',
+        2 => 'USD',
+        3 => 'JPY',
+        4 => 'CHF',
+        7 => 'CAD',
+        9 => 'GBP',
         15 => 'SEK',
         16 => 'CRC',
         18 => 'MXN',
@@ -57,13 +58,13 @@ class ExchangeRate
     private function request($function, $params = [])
     {
         $options = [
-            'trace'          => 1,
-            'exceptions'     => true,
-            'cache_wsdl'     => WSDL_CACHE_NONE,
+            'trace' => 1,
+            'exceptions' => true,
+            'cache_wsdl' => WSDL_CACHE_NONE,
             'stream_context' => stream_context_create([
                 'ssl' => [
-                    'verify_peer'       => false,
-                    'verify_peer_name'  => false,
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
                     'allow_self_signed' => true
                 ]
             ])
@@ -111,7 +112,7 @@ class ExchangeRate
         if (is_null($currency)) {
             $params = [
                 'fechainit' => (!is_null($initial_date)) ? $initial_date : date('d/m/Y'),
-                'fechafin'  => (!is_null($ending_date)) ? $ending_date : date('d/m/Y')
+                'fechafin' => (!is_null($ending_date)) ? $ending_date : date('d/m/Y')
             ];
 
             $result = $this->request('TipoCambioRango', $params);
@@ -122,8 +123,8 @@ class ExchangeRate
         } else {
             $params = [
                 'fechainit' => (!is_null($initial_date)) ? $initial_date : date('d/m/Y'),
-                'fechafin'  => (!is_null($ending_date)) ? $ending_date : date('d/m/Y'),
-                'moneda'    => (int) $currency
+                'fechafin' => (!is_null($ending_date)) ? $ending_date : date('d/m/Y'),
+                'moneda' => (int) $currency
             ];
 
             $result = $this->request('TipoCambioRangoMoneda', $params);
@@ -149,7 +150,7 @@ class ExchangeRate
         $gtq_primary = false;
 
         if ($currency == 'GTQ' || $currency == 1) {
-            $currency    = 'USD';
+            $currency = 'USD';
             $gtq_primary = true;
         }
 
@@ -158,13 +159,13 @@ class ExchangeRate
 
         if (is_numeric($currency)) {
             $result = $this->getRangeExchangeRate($date, $date, $currency);
-        } elseif (is_string($currency)) {
+        } else if (is_string($currency)) {
             $currencies = $this->getAvailableCurrencies();
 
             foreach ($currencies as $value) {
                 if ($value->codigo == $currency) {
                     $currency = $value->moneda;
-                    $result   = $this->getRangeExchangeRate($date, $date, $currency);
+                    $result = $this->getRangeExchangeRate($date, $date, $currency);
                 }
             }
         }
@@ -177,7 +178,7 @@ class ExchangeRate
         ];
 
         if (isset($result->moneda) && in_array($result->moneda, $usd_based)) {
-            $result->venta  = round(1 / $result->venta, 5);
+            $result->venta = round(1 / $result->venta, 5);
             $result->compra = round(1 / $result->compra, 5);
         }
 
@@ -190,12 +191,30 @@ class ExchangeRate
         if (($currency == 'USD' || $currency == 2) && !$gtq_primary) {
             return (object) [
                 'moneda' => $currency,
-                'fecha'  => date('d/m/Y'),
-                'venta'  => 1,
+                'fecha' => date('d/m/Y'),
+                'venta' => 1,
                 'compra' => 1
             ];
         }
 
         return $result;
+    }
+
+    public function convertCurrency($amount, $from = 'GTQ', $to = 'USD')
+    {
+        if ($from == $to) {
+            return $amount;
+        }
+
+        $from = $this->getCurrencyExchangeRate($from);
+        $to = $this->getCurrencyExchangeRate($to);
+
+        // Convert the origin to USD
+        $amount = round($amount / $from->compra, 5);
+
+        // Convert from USD to destination
+        $amount = round($amount * $to->compra, 5);
+
+        return $amount;
     }
 }
