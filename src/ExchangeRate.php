@@ -109,7 +109,6 @@ class ExchangeRate
 
     public function getRangeExchangeRate($initial_date = null, $ending_date = null, $currency = null)
     {
-
         if (is_null($currency)) {
             $params = [
                 'fechainit' => (!is_null($initial_date)) ? $initial_date : date('d/m/Y'),
