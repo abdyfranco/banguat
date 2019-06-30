@@ -109,6 +109,7 @@ class ExchangeRate
 
     public function getRangeExchangeRate($initial_date = null, $ending_date = null, $currency = null)
     {
+
         if (is_null($currency)) {
             $params = [
                 'fechainit' => (!is_null($initial_date)) ? $initial_date : date('d/m/Y'),
@@ -137,6 +138,13 @@ class ExchangeRate
         // Maybe there is not exchange rate for today, we will try to use the same exchange rate as yesterday
         if (($initial_date == $ending_date) && $initial_date == date('d/m/Y')) {
             $date = date('d/m/Y', strtotime('-1 day'));
+
+            return $this->getRangeExchangeRate($date, $date, $currency);
+        }
+
+        // Maybe there is no exchange rate for yesterday too, we will try to use the same exchange rate as the day before yesterday.
+        if (($initial_date == $ending_date) && $initial_date == date('d/m/Y', strtotime('-1 day'))) {
+            $date = date('d/m/Y', strtotime('-2 day'));
 
             return $this->getRangeExchangeRate($date, $date, $currency);
         }
