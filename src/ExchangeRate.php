@@ -3,11 +3,11 @@
  * Provides an easy-to-use class for communicating with the exchange rate
  * web service of Banco de Guatemala.
  *
- * @package Banguat
+ * @package    Banguat
  * @subpackage Banguat.ExchangeRate
- * @copyright Copyright (c) 2018-2019 Abdy Franco. All Rights Reserved.
- * @license https://opensource.org/licenses/MIT The MIT License (MIT)
- * @author Abdy Franco <iam@abdyfran.co>
+ * @copyright  Copyright (c) 2018-2019 Abdy Franco. All Rights Reserved.
+ * @license    https://opensource.org/licenses/MIT The MIT License (MIT)
+ * @author     Abdy Franco <iam@abdyfran.co>
  */
 
 namespace Banguat;
@@ -75,7 +75,7 @@ class ExchangeRate
 
             $response = $api->__soapCall($function, ['parameters' => $params]);
         } catch (SoapFault $fault) {
-            throw new \Exception($fault->faultstring);
+            throw new UnknownError($fault->faultstring);
         }
 
         return $response;
@@ -141,7 +141,7 @@ class ExchangeRate
             return $this->getRangeExchangeRate($date, $date, $currency);
         }
 
-        // Maybe there is no exchange rate for yesterday too, we will try to use the same exchange rate as the day before yesterday.
+        // Maybe there is no exchange rate for yesterday too, we will try to use the same exchange rate as the day before yesterday
         if (($initial_date == $ending_date) && $initial_date == date('d/m/Y', strtotime('-1 day'))) {
             $date = date('d/m/Y', strtotime('-2 day'));
 
@@ -166,13 +166,15 @@ class ExchangeRate
 
         if (is_numeric($currency)) {
             $result = $this->getRangeExchangeRate($date, $date, $currency);
-        } elseif (is_string($currency)) {
-            $currencies = $this->getAvailableCurrencies();
+        } else {
+            if (is_string($currency)) {
+                $currencies = $this->getAvailableCurrencies();
 
-            foreach ($currencies as $value) {
-                if ($value->codigo == $currency) {
-                    $currency = $value->moneda;
-                    $result   = $this->getRangeExchangeRate($date, $date, $currency);
+                foreach ($currencies as $value) {
+                    if ($value->codigo == $currency) {
+                        $currency = $value->moneda;
+                        $result   = $this->getRangeExchangeRate($date, $date, $currency);
+                    }
                 }
             }
         }
